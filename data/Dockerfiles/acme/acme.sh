@@ -255,6 +255,18 @@ while true; do
     for SUBDOMAIN in "${ADDITIONAL_WC_ARR[@]}"; do
       FULL_SUBDOMAIN="${SUBDOMAIN}.${SQL_DOMAIN}"
 
+      # Skip mta-sts subdomain unless MTA-STS is enabled (active) for this domain
+      if [[ "${SUBDOMAIN}" == "mta-sts" ]]; then
+        if [[ ${AUTODISCOVER_SAN} != "y" ]]; then
+          continue
+        fi
+        MTA_STS_ACTIVE=$(mariadb --skip-ssl --socket=/var/run/mysqld/mysqld.sock -u ${DBUSER} -p${DBPASS} ${DBNAME} -e "SELECT 1 FROM mta_sts WHERE domain = \"${SQL_DOMAIN}\" AND active = 1" -Bs)
+        if [[ -z "${MTA_STS_ACTIVE}" ]]; then
+          log_f "MTA-STS is not enabled for ${SQL_DOMAIN} - skipping mta-sts subdomain certificate"
+          continue
+        fi
+      fi
+
       # Skip if subdomain matches MAILCOW_HOSTNAME
       if [[ "${FULL_SUBDOMAIN}" == "${MAILCOW_HOSTNAME}" ]]; then
         continue
