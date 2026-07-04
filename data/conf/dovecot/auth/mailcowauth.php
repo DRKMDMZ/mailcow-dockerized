@@ -74,7 +74,7 @@ if ($isSOGoRequest) {
   $sogo_sso_pass = file_get_contents("/etc/sogo-sso/sogo-sso.pass");
   if ($sogo_sso_pass === $post['password']){
     error_log('MAILCOWAUTH: SOGo SSO auth for user ' . $post['username']);
-    set_sasl_log($post['username'], $post['real_rip'], "SOGO");
+    set_sasl_log($post['username'], $post['real_rip'], "SSO");
     $result = true;
   }
 }
