@@ -667,7 +667,10 @@ function recursiveBase64StrToArrayBuffer(obj) {
 </script>
 
 <div class="container footer">
-  {% if ui_texts.ui_footer %}
+  {% if ui_texts.footer_html %}
+  <hr><span>{{ ui_texts.footer_html|raw }}</span>
+  {% endif %}
+  {% if ui_texts.ui_footer and not ui_texts.footer_html %}
   <hr><span class="rot-enc">{{ ui_texts.ui_footer|rot13|raw }}</span>
   {% endif %}
   {% if mailcow_cc_username and mailcow_info.mailcow_branch|lower == "master" and mailcow_info.version_tag|default %}
