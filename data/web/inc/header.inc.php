@@ -68,6 +68,48 @@ if (isset($UI_TEXTS["ui_footer"])) {
   $UI_TEXTS["ui_footer"] = nl2br($UI_TEXTS["ui_footer"]);
 }
 
+// === Per-domain branding logo (DRK custom) ==========================
+// Serve a domain-specific logo on the login/UI depending on the vhost the
+// user connects to (e.g. mail.drk-rmt.org). Falls back to the regular
+// customize() logo (Redis, admin UI) for every other host.
+// Add a domain by dropping SVG/PNG files into data/web/img/branding/ and
+// adding one line to $per_domain_logos below.
+$per_domain_logos = [
+  'drk-rmt.org' => [
+    'light' => 'img/branding/logo-drk-rmt.svg',
+    'dark'  => 'img/branding/logo-drk-rmt-dark.svg',
+  ],
+];
+$branding_logo = null;
+$branding_logo_dark = null;
+if (!empty($_SERVER['HTTP_HOST'])) {
+  $brand_host = strtolower(explode(':', $_SERVER['HTTP_HOST'])[0]);
+  $brand_match = null;
+  if (isset($per_domain_logos[$brand_host])) {
+    $brand_match = $per_domain_logos[$brand_host];
+  } else {
+    $bp = explode('.', $brand_host);
+    while (count($bp) > 1) {
+      array_shift($bp);
+      $cand = implode('.', $bp);
+      if (isset($per_domain_logos[$cand])) { $brand_match = $per_domain_logos[$cand]; break; }
+    }
+  }
+  if ($brand_match !== null) {
+    $doc = $_SERVER['DOCUMENT_ROOT'];
+    $mime_for = function($f) {
+      $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
+      return $ext === 'svg' ? 'image/svg+xml' : ($ext === 'png' ? 'image/png' : ($ext === 'jpg' || $ext === 'jpeg' ? 'image/jpeg' : 'application/octet-stream'));
+    };
+    if (!empty($brand_match['light']) && is_file($doc.'/'.$brand_match['light'])) {
+      $branding_logo = 'data:'.$mime_for($brand_match['light']).';base64,'.base64_encode(file_get_contents($doc.'/'.$brand_match['light']));
+    }
+    if (!empty($brand_match['dark']) && is_file($doc.'/'.$brand_match['dark'])) {
+      $branding_logo_dark = 'data:'.$mime_for($brand_match['dark']).';base64,'.base64_encode(file_get_contents($doc.'/'.$brand_match['dark']));
+    }
+  }
+}
+
 $globalVariables = [
   'mailcow_hostname' => getenv('MAILCOW_HOSTNAME'),
   'mailcow_locale' => @$_SESSION['mailcow_locale'],
@@ -77,8 +119,8 @@ $globalVariables = [
   'dual_login' => @$_SESSION['dual-login'],
   'ui_texts' => $UI_TEXTS,
   'css_path' => '/cache/'.basename($CSSPath),
-  'logo' => customize('get', 'main_logo'),
-  'logo_dark' => customize('get', 'main_logo_dark'),
+  'logo' => $branding_logo ?: customize('get', 'main_logo'),
+  'logo_dark' => $branding_logo_dark ?: customize('get', 'main_logo_dark'),
   'available_languages' => $AVAILABLE_LANGUAGES,
   'lang' => $lang,
   'skip_sogo' => (getenv('SKIP_SOGO') == 'y'),
