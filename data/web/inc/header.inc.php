@@ -79,9 +79,10 @@ $per_domain_logos = [
     'light' => 'img/branding/logo-drk-rmt.svg',
     'dark'  => 'img/branding/logo-drk-rmt-dark.svg',
     'texts' => [
-      'title_name' => 'RMT Mail UI',
-      'main_name'  => 'RMT Mail UI',
-      'apps_name'  => 'RMT Mail Apps',
+      'title_name'  => 'RMT Mail UI',
+      'main_name'   => 'RMT Mail UI',
+      'apps_name'   => 'RMT Mail Apps',
+      'footer_html' => '<center>DRK Rettungsdienst Rhein-Main-Taunus gGmbH - Flachstra&szlig;e 6 - 65197 Wiesbaden<br><a href="https://www.drk-rettungsdienst-rmt.de/service/impressum.html" target="_blank" rel="noopener">Impressum</a> | <a href="https://www.drk-rettungsdienst-rmt.de/service/datenschutz.html" target="_blank" rel="noopener">Datenschutz</a></center>',
     ],
   ],
 ];
