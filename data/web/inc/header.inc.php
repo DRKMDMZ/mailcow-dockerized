@@ -78,6 +78,11 @@ $per_domain_logos = [
   'drk-rmt.org' => [
     'light' => 'img/branding/logo-drk-rmt.svg',
     'dark'  => 'img/branding/logo-drk-rmt-dark.svg',
+    'texts' => [
+      'title_name' => 'RMT Mail UI',
+      'main_name'  => 'RMT Mail UI',
+      'apps_name'  => 'RMT Mail Apps',
+    ],
   ],
 ];
 $branding_logo = null;
@@ -106,6 +111,12 @@ if (!empty($_SERVER['HTTP_HOST'])) {
     }
     if (!empty($brand_match['dark']) && is_file($doc.'/'.$brand_match['dark'])) {
       $branding_logo_dark = 'data:'.$mime_for($brand_match['dark']).';base64,'.base64_encode(file_get_contents($doc.'/'.$brand_match['dark']));
+    }
+    // Override UI texts (login heading, apps section, browser title) per domain
+    if (!empty($brand_match['texts']) && is_array($UI_TEXTS)) {
+      foreach ($brand_match['texts'] as $tk => $tv) {
+        $UI_TEXTS[$tk] = $tv;
+      }
     }
   }
 }
