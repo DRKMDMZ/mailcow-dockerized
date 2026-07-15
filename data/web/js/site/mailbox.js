@@ -446,7 +446,7 @@ $(document).ready(function() {
 jQuery(function($){
   // http://stackoverflow.com/questions/46155/validate-email-address-in-javascript
   function humanFileSize(i){if(Math.abs(i)<1024)return i+" B";var B=["KiB","MiB","GiB","TiB","PiB","EiB","ZiB","YiB"],e=-1;do{i/=1024,++e}while(Math.abs(i)>=1024&&e<B.length-1);return i.toFixed(1)+" "+B[e]}
-  function unix_time_format(i){return""==i?'<i class="bi bi-x"></i>':new Date(i?1e3*i:0).toLocaleDateString(void 0,{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"})}
+  function unix_time_format(i){return(""==i||!Number(i))?'<i class="bi bi-x"></i>':new Date(1e3*i).toLocaleDateString(void 0,{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"})}
 
   $(".refresh_table").on('click', function(e) {
     e.preventDefault();
