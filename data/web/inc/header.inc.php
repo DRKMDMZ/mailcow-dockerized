@@ -22,6 +22,9 @@ if (preg_match("/debug/i", $_SERVER['REQUEST_URI'])) {
 if ($_SERVER['REQUEST_URI'] == '/') {
   $css_minifier->add('/web/css/site/index.css');
 }
+if (file_exists('/web/css/themes/'.$UI_THEME.'/theme.css')) {
+  $css_minifier->add('/web/css/themes/'.$UI_THEME.'/theme.css');
+}
 
 $hash = $css_minifier->getDataHash();
 $CSSPath = '/tmp/' . $hash . '.css';
@@ -29,6 +32,17 @@ if(!file_exists($CSSPath)) {
   $css_minifier->minify($CSSPath);
   cleanupCSS($hash);
 }
+
+// dark mode bundle, core dark mode + theme dark.css
+$dark_minifier = new CSSminifierExtended('/web/css/themes/mailcow-darkmode.css');
+if (file_exists('/web/css/themes/'.$UI_THEME.'/dark.css')) {
+  $dark_minifier->add('/web/css/themes/'.$UI_THEME.'/dark.css');
+}
+$DarkCSSPath = '/tmp/' . $hash . '-' . $dark_minifier->getDataHash() . '.css';
+if(!file_exists($DarkCSSPath)) {
+  $dark_minifier->minify($DarkCSSPath);
+}
+$dark_css_path = '/cache/' . basename($DarkCSSPath);
 
 $mailcow_apps_processed = $MAILCOW_APPS;
 $app_links = customize('get', 'app_links');
@@ -75,6 +89,11 @@ if (isset($UI_TEXTS["ui_footer"])) {
 // Add a domain by dropping SVG/PNG files into data/web/img/branding/ and
 // adding one line to $per_domain_logos below.
 $per_domain_logos = [
+  'tmkis.com' => [
+    'texts' => [
+      'footer_html' => '<center>TMKIS Internet Services<br><a href="https://tmkis.com/impressum.html" target="_blank" rel="noopener">Impressum</a> | <a href="https://tmkis.com/datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a></center>',
+    ],
+  ],
   'drk-rmt.org' => [
     'light' => 'img/branding/logo-drk-rmt.svg',
     'dark'  => 'img/branding/logo-drk-rmt-dark.svg',
@@ -131,6 +150,7 @@ $globalVariables = [
   'dual_login' => @$_SESSION['dual-login'],
   'ui_texts' => $UI_TEXTS,
   'css_path' => '/cache/'.basename($CSSPath),
+  'dark_css_path' => $dark_css_path,
   'logo' => $branding_logo ?: customize('get', 'main_logo'),
   'logo_dark' => $branding_logo_dark ?: customize('get', 'main_logo_dark'),
   'available_languages' => $AVAILABLE_LANGUAGES,
