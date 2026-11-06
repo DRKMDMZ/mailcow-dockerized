@@ -5,6 +5,8 @@ file:close()
 
 local implementation = assert(source:match('(local function expand_footer%b().-\nend)\n\nrspamd_config:register_symbol'))
 local expand_footer = assert(loadstring(implementation .. '\nreturn expand_footer'))()
+local name_implementation = assert(source:match('(local function footer_sender_name%b().-\nend)\n\nrspamd_config:register_symbol'))
+local footer_sender_name = assert(loadstring(name_implementation .. '\nreturn footer_sender_name'))()
 
 local function check(template, variables, expected)
   local actual = expand_footer(template, variables)
@@ -21,4 +23,9 @@ check('{% if Mobil %}Mobil: {= Mobil =}\n{% endif %}E-Mail: {= from_addr =}',
 check('{% if Abteilung %}A{% if Telefon %}B{% else %}C{% endif %}{% else %}D{% endif %}',
   {Abteilung = 'IT'}, 'AC')
 check('{% if dangerous() %}literal{% endif %}', {}, '{% if dangerous() %}literal{% endif %}')
+assert(footer_sender_name({name = 'Display Name'}, {addr = '3CX@drk-rmt.org'}, '3CX Telefonie System', '3cx@drk-rmt.org') == 'Display Name')
+assert(footer_sender_name({name = '  '}, {addr = '3CX@drk-rmt.org'}, '3CX Telefonie System', '3cx@drk-rmt.org') == '3CX Telefonie System')
+assert(footer_sender_name(nil, {addr = '3CX@drk-rmt.org', name = 'Envelope Name'}, '3CX Telefonie System', '3cx@drk-rmt.org') == 'Envelope Name')
+assert(footer_sender_name(nil, {addr = 'alias@drk-rmt.org'}, 'Other Name', '3cx@drk-rmt.org') == '')
+assert(footer_sender_name(nil, {addr = '3CX@drk-rmt.org'}, nil, '3cx@drk-rmt.org') == '')
 print('Domain footer regression tests passed')

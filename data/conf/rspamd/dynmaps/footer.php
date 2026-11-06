@@ -100,6 +100,12 @@ try {
   if (empty($custom_attributes)){
     $custom_attributes = (object)array();
   }
+  $stmt = $pdo->prepare("SELECT `name` FROM `mailbox` WHERE `username` = :username AND `username` = :sender AND `active` = '1'");
+  $stmt->execute(array(
+    ':username' => $username,
+    ':sender' => $from
+  ));
+  $mailbox = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 catch (Exception $e) {
   error_log("FOOTER: " . $e->getMessage() . PHP_EOL);
@@ -110,4 +116,5 @@ catch (Exception $e) {
 
 // return footer
 $footer["vars"] = $custom_attributes;
+$footer["mailbox_name"] = $mailbox ? $mailbox['name'] : '';
 echo json_encode($footer);

@@ -14,3 +14,5 @@ docker exec mailcowdockerized-rspamd-mailcow-1 rspamadm lua -s /tmp/test_domain_
 
 The test extracts the installed renderer and checks the actual plain/HTML
 conditional forms without processing a real message or changing mail state.
+It also checks that the message's display name wins and that the mailbox-name
+fallback is limited to the authenticated sender mailbox.

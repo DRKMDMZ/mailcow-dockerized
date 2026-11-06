@@ -809,6 +809,20 @@ local function expand_footer(template, replacements)
   end))
 end
 
+local function footer_sender_name(mime_sender, envelope_sender, mailbox_name, username)
+  if mime_sender and type(mime_sender.name) == 'string' and mime_sender.name:match('%S') then
+    return mime_sender.name
+  end
+  if envelope_sender and type(envelope_sender.name) == 'string' and envelope_sender.name:match('%S') then
+    return envelope_sender.name
+  end
+  if envelope_sender and type(envelope_sender.addr) == 'string' and
+      envelope_sender.addr:lower() == username and type(mailbox_name) == 'string' then
+    return mailbox_name
+  end
+  return ''
+end
+
 rspamd_config:register_symbol({
   name = 'MOO_FOOTER',
   type = 'prefilter',
@@ -861,12 +875,8 @@ rspamd_config:register_symbol({
             end
 
             local envfrom_mime = task:get_from(2)
-            local from_name = ""
-            if envfrom_mime and envfrom_mime[1].name then
-              from_name = envfrom_mime[1].name
-            elseif envfrom and envfrom[1].name then
-              from_name = envfrom[1].name
-            end
+            local from_name = footer_sender_name(envfrom_mime and envfrom_mime[1],
+              envfrom[1], footer.mailbox_name, uname)
 
             -- default replacements
             local replacements = {
@@ -886,6 +896,7 @@ rspamd_config:register_symbol({
                 end
               end
             end
+            replacements.from_name = from_name
             if footer.html and footer.html ~= "" then
               footer.html = expand_footer(footer.html, replacements)
             end
