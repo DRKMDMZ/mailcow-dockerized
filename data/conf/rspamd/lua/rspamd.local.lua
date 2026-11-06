@@ -768,6 +768,40 @@ rspamd_config:register_symbol({
 -- Expand a domain footer: replace only "{= key =}" placeholders with their values.
 -- Unknown placeholders render empty, matching the previous engine behaviour.
 local function expand_footer(template, replacements)
+  local output = {}
+  local position = 1
+  local active = true
+  local conditions = {}
+  while true do
+    local start_pos = template:find('{%', position, true)
+    if not start_pos then
+      if active then output[#output + 1] = template:sub(position) end
+      break
+    end
+    if active then output[#output + 1] = template:sub(position, start_pos - 1) end
+    local end_pos = template:find('%}', start_pos + 2, true)
+    if not end_pos then
+      if active then output[#output + 1] = template:sub(start_pos) end
+      break
+    end
+    local tag = template:sub(start_pos + 2, end_pos - 1):match('^%s*(.-)%s*$')
+    local key = tag:match('^if%s+([%w_]+)$')
+    if key then
+      local value = replacements[key]
+      local present = value ~= nil and value ~= false and tostring(value) ~= ''
+      conditions[#conditions + 1] = {parent = active, present = present}
+      active = active and present
+    elseif tag == 'else' and #conditions > 0 then
+      local condition = conditions[#conditions]
+      active = condition.parent and not condition.present
+    elseif tag == 'endif' and #conditions > 0 then
+      active = table.remove(conditions).parent
+    elseif active then
+      output[#output + 1] = template:sub(start_pos, end_pos + 1)
+    end
+    position = end_pos + 2
+  end
+  template = table.concat(output)
   return (template:gsub('{=%s*([%w_]+)%s*=}', function(key)
     local value = replacements[key]
     if value == nil then return '' end
